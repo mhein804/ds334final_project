@@ -1,0 +1,63 @@
+---
+title: "Final Project"
+author: "Mathias Heinz"
+date: "2024-04-8"
+categories: [code, analysis]
+
+---
+```{r}
+library(tidyverse)
+
+wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-28/winemag-data-130k-v2.csv")
+
+
+```
+
+```{r}
+country_sel <- wine_ratings |> distinct(country) |> pull(country)
+wine_ratings |> distinct(variety) |> pull(variety)
+
+wine_ratings |> filter(variety == "Cabernet Sauvignon" 
+                       | variety == "Pinot Noir" | variety == "Merlot" 
+                       | variety == "Chardonay" | variety == "Sauvignon Blanc"
+                       | variety == "Pinot Gris" | variety == "Reisling"
+                       | variety == "Reisling" | variety == "Red Blend"
+                       | variety == "White Blend" | variety == "Malbec"
+                       | variety == "Rosé" | variety == "Moscato"
+                       | variety == "Prosecco" | variety == "Tempranillo"
+                       | variety == "Syrah" | variety == "Shiraz"
+                       | variety == "Zinfandel") |> distinct(variety) |>
+  pull(variety)
+
+
+wine_ratings |> filter(variety == "Zinfandel")
+
+## Of the 707 varieties in the data set I have collected 17 of the most popular grape varieties, leaving me with almost 60,000 observations.
+```
+
+
+
+```{r}
+library(shiny)
+
+#ui <- fluidPage(
+#  sidebarLayout(
+ #   sidebarPanel(
+  #    selectInput("country_sel", label = "Choose a Country", 
+   #               choices = country_sel),
+    #  radioButtons("white_or_red", label = "Red or White",
+     #             choices = c("Red", "White")),
+      #selectInput("grape_sel", label = "Choose a Grape",
+       #           choices = grape_sel)
+  #  ),
+   # mainPanel()
+#  )
+#)
+#
+#server <- function(input, output, session) {
+  
+#}
+
+#shinyApp(ui, server)
+```
+
