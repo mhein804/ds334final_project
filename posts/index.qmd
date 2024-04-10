@@ -17,7 +17,7 @@ wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascien
 country_sel <- wine_ratings |> distinct(country) |> pull(country)
 wine_ratings |> distinct(variety) |> pull(variety)
 
-wine_ratings |> filter(variety == "Cabernet Sauvignon" 
+wine_clean <- wine_ratings |> filter(variety == "Cabernet Sauvignon" 
                        | variety == "Pinot Noir" | variety == "Merlot" 
                        | variety == "Chardonay" | variety == "Sauvignon Blanc"
                        | variety == "Pinot Gris" | variety == "Reisling"
@@ -26,12 +26,13 @@ wine_ratings |> filter(variety == "Cabernet Sauvignon"
                        | variety == "Rosé" | variety == "Moscato"
                        | variety == "Prosecco" | variety == "Tempranillo"
                        | variety == "Syrah" | variety == "Shiraz"
-                       | variety == "Zinfandel") |> distinct(variety) |>
-  pull(variety)
-
+                       | variety == "Zinfandel") 
+#|> mutate(r_w = case_when( variety = "Chardonay" ~ "White", variety = "Sauvignon Blanc" ~ "White"))
+grape_sel <- wine_clean |> distinct(variety) |> pull(variety)
 
 wine_ratings |> filter(variety == "Zinfandel")
-
+wine_clean |> filter(!is.na(price)) |> summarise(min(price))
+wine_clean |> filter(!is.na(price)) |> summarise(max(price))
 ## Of the 707 varieties in the data set I have collected 17 of the most popular grape varieties, leaving me with almost 60,000 observations.
 ```
 
@@ -40,24 +41,33 @@ wine_ratings |> filter(variety == "Zinfandel")
 ```{r}
 library(shiny)
 
-#ui <- fluidPage(
-#  sidebarLayout(
- #   sidebarPanel(
-  #    selectInput("country_sel", label = "Choose a Country", 
-   #               choices = country_sel),
-    #  radioButtons("white_or_red", label = "Red or White",
-     #             choices = c("Red", "White")),
-      #selectInput("grape_sel", label = "Choose a Grape",
-       #           choices = grape_sel)
-  #  ),
-   # mainPanel()
-#  )
-#)
-#
-#server <- function(input, output, session) {
-  
-#}
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("country_sel", label = "Choose a Country", 
+                  choices = country_sel),
+      radioButtons("white_or_red", label = "Red or White",
+                  choices = c("Red", "White")),
+      selectInput("grape_sel", label = "Choose a Grape",
+                 choices = grape_sel),
+      sliderInput("price_range", label = "Choose a Minimum Price",
+                  min = 4, max = 2500, value = 4, step = 1)
+    ),
+    mainPanel()
+  )
+)
 
-#shinyApp(ui, server)
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+ggplot(wine_clean, aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()
+  
 ```
 
