@@ -14,22 +14,33 @@ wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascien
 ```
 
 ```{r}
-country_sel <- wine_ratings |> distinct(country) |> pull(country)
-wine_ratings |> distinct(variety) |> pull(variety)
+
 
 wine_clean <- wine_ratings |> filter(variety == "Cabernet Sauvignon" 
-                       | variety == "Pinot Noir" | variety == "Merlot" 
-                       | variety == "Chardonay" | variety == "Sauvignon Blanc"
-                       | variety == "Pinot Gris" | variety == "Reisling"
-                       | variety == "Reisling" | variety == "Red Blend"
-                       | variety == "White Blend" | variety == "Malbec"
-                       | variety == "Rosé" | variety == "Moscato"
-                       | variety == "Prosecco" | variety == "Tempranillo"
-                       | variety == "Syrah" | variety == "Shiraz"
-                       | variety == "Zinfandel") 
-#|> mutate(r_w = case_when( variety = "Chardonay" ~ "White", variety = "Sauvignon Blanc" ~ "White"))
+                                     | variety == "Pinot Noir" | variety == "Merlot" 
+                                     | variety == "Chardonay" | variety == "Sauvignon Blanc"
+                                     | variety == "Pinot Gris" |  variety == "Reisling"                           | variety == "Red Blend"
+                                     | variety == "White Blend" | variety == "Malbec"
+                                     | variety == "Rosé" | variety == "Moscato"
+                                     | variety == "Prosecco" | variety == "Tempranillo"
+                                     | variety == "Syrah" | variety == "Shiraz"
+                                     | variety == "Zinfandel") |> 
+  mutate(r_w = case_when(variety == "Chardonay" 
+                          | variety == "Sauvignon Blanc" 
+                          | variety == "Pinot Gris" 
+                          | variety == "Reisling" 
+                          | variety == "White Blend"
+                          | variety == "Moscato"
+                          | variety == "Rosé"
+                          | variety == "Prosecco" ~ "White",
+         variety == "Cabernet Savuginon" | variety == "Pinot Noir"
+         | variety == "Merlot" | variety == "Red Blend" | 
+           variety == "Malbec" | variety == "Tempranillo" |
+           variety == "Syrah" | variety == "Shiraz" |
+           variety == "Zinfandel" ~ "Red"))
 grape_sel <- wine_clean |> distinct(variety) |> pull(variety)
-
+country_sel <- wine_clean |> distinct(country) |> pull(country)
+wine_ratings |> distinct(variety) |> pull(variety)
 wine_ratings |> filter(variety == "Zinfandel")
 wine_clean |> filter(!is.na(price)) |> summarise(min(price))
 wine_clean |> filter(!is.na(price)) |> summarise(max(price))
@@ -59,7 +70,7 @@ ui <- fluidPage(
       selectInput("grape_sel", label = "Choose a Grape",
                  choices = grape_sel),
       sliderInput("price_range", label = "Choose a Minimum Price",
-                  min = 4, max = 2500, value = 4, step = 1, dragRange = TRUE)
+                  min = 4, max = 2500, value = c(4,2500), step = 1)
     ),
     mainPanel(
       plotOutput("wine_plot"),
@@ -71,18 +82,18 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   wine_plot <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
-  filter(variety == input$variety_sel) |> 
+  filter(variety == input$grape_sel) |> 
   filter(price >= input$price_range) 
   })
-  output$win_table <- renderTable({
+  output$wine_table <- renderTable({
     wine_plot()
   })
-  output$wine_plot <_ renderPlot({
+  output$wine_plot <- renderPlot({
     ggplot(wine_plot(), aes(x = price, y = points))+
   geom_hex()+
   scale_color_viridis_c()+
   labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
-                          input$wariety_sel))
+                          input$grape_sel))
   })
 }
 
@@ -94,5 +105,55 @@ ggplot(wine_clean, aes(x = price, y = points))+
   geom_hex()+
   scale_color_viridis_c()
   
+```
+
+Testing section to not break code
+
+```{r}
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("country_sel", label = "Choose a Country", 
+                  choices = country_sel),
+      radioButtons("white_or_red", label = "Red or White",
+                  choices = c("Red", "White")),
+      selectInput("grape_sel", label = "Choose a Grape",
+                 choices = grape_sel),
+      sliderInput("price_range", label = "Choose a Minimum Price",
+                  min = 4, max = 2500, value = c(4,2500), step = 1)
+    ),
+    mainPanel(
+      plotOutput("wine_plot"),
+      tableOutput("wine_table")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+ observeEvent(input$white_or_red, {
+   grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> distinct(variety) |> pull(variety)
+   
+   updateSelectInput(inputId = "grape_sel",
+                     choices = grape_sel)
+ })
+  
+   wine_plot <- reactive({
+    wine_one <- wine_clean |> filter(country == input$country_sel) |> 
+  filter(variety == input$grape_sel) |> 
+  filter(price >= input$price_range & price <= input$price_range) 
+  })
+  output$wine_table <- renderTable({
+    wine_plot()
+  })
+  output$wine_plot <- renderPlot({
+    ggplot(wine_plot(), aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()+
+  labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
+                          input$grape_sel))
+  })
+}
+
+shinyApp(ui, server)
 ```
 
