@@ -34,6 +34,14 @@ wine_ratings |> filter(variety == "Zinfandel")
 wine_clean |> filter(!is.na(price)) |> summarise(min(price))
 wine_clean |> filter(!is.na(price)) |> summarise(max(price))
 ## Of the 707 varieties in the data set I have collected 17 of the most popular grape varieties, leaving me with almost 60,000 observations.
+
+oregon_pn <- wine_clean |> filter(country == "US") |> 
+  filter(variety == "Pinot Noir") |> 
+  filter(price >= 20 & price <= 50) |> 
+  filter(province == "Oregon")
+
+ggplot(oregon_pn, aes(x = price, y = points))+
+  geom_hex()
 ```
 
 
@@ -51,14 +59,31 @@ ui <- fluidPage(
       selectInput("grape_sel", label = "Choose a Grape",
                  choices = grape_sel),
       sliderInput("price_range", label = "Choose a Minimum Price",
-                  min = 4, max = 2500, value = 4, step = 1)
+                  min = 4, max = 2500, value = 4, step = 1, dragRange = TRUE)
     ),
-    mainPanel()
+    mainPanel(
+      plotOutput("wine_plot"),
+      tableOutput("wine_table")
+    )
   )
 )
 
 server <- function(input, output, session) {
-  
+  wine_plot <- reactive({
+    wine_one <- wine_clean |> filter(country == input$country_sel) |> 
+  filter(variety == input$variety_sel) |> 
+  filter(price >= input$price_range) 
+  })
+  output$win_table <- renderTable({
+    wine_plot()
+  })
+  output$wine_plot <_ renderPlot({
+    ggplot(wine_plot(), aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()+
+  labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
+                          input$wariety_sel))
+  })
 }
 
 shinyApp(ui, server)
