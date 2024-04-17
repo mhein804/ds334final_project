@@ -7,6 +7,7 @@ categories: [code, analysis]
 ---
 ```{r}
 library(tidyverse)
+library(plotly)
 
 wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-28/winemag-data-130k-v2.csv")
 
@@ -124,7 +125,9 @@ ui <- fluidPage(
     ),
     mainPanel(
       plotOutput("wine_plot"),
+      plotlyOutput("wine_point"),
       tableOutput("wine_table")
+      
     )
   )
 )
@@ -137,15 +140,17 @@ server <- function(input, output, session) {
                      choices = grape_sel)
  })
   observeEvent(input$country_sel,{
-    grape_sel <- wine_clean |> filter(r_w == input$country_sel) |> distinct(variety) |> pull(variety)
+    grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> filter(country == input$country_sel) |> distinct(variety) |> pull(variety)
     updateSelectInput(inputId = "grape_sel",
                       choices = grape_sel)
   })
    wine_plot <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
   filter(variety == input$grape_sel) |> 
-  filter(price >= input$price_range) 
+  filter(price >= input$price_range) |> filter(
+  price >= input$price_range[1] & price <= input$price_range[2])
   })
+   
   output$wine_table <- renderTable({
     wine_plot()
   })
@@ -156,8 +161,26 @@ server <- function(input, output, session) {
   labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
                           input$grape_sel))
   })
+  output$wine_point <- renderPlotly({
+    ggplot(data = wine_plot(), aes(x = price, y = points, label = title))+
+      geom_point()+
+      theme_minimal()+
+      labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
+                          input$grape_sel))
+    ggplotly(wine_point, tooltip = "label")
+  })
 }
 
 shinyApp(ui, server)
+```
+
+```{r}
+library(plotly)
+oregon_plot <- ggplot(data = oregon_pn, aes(x = price, y = points, label = title))+
+  geom_point()+
+  theme_minimal()
+
+ggplotly(oregon_plot, tooltip = "label")
+
 ```
 
