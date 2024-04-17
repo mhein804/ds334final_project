@@ -136,11 +136,15 @@ server <- function(input, output, session) {
    updateSelectInput(inputId = "grape_sel",
                      choices = grape_sel)
  })
-  
+  observeEvent(input$country_sel,{
+    grape_sel <- wine_clean |> filter(r_w == input$country_sel) |> distinct(variety) |> pull(variety)
+    updateSelectInput(inputId = "grape_sel",
+                      choices = grape_sel)
+  })
    wine_plot <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
   filter(variety == input$grape_sel) |> 
-  filter(price >= input$price_range & price <= input$price_range) 
+  filter(price >= input$price_range) 
   })
   output$wine_table <- renderTable({
     wine_plot()
