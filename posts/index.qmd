@@ -125,7 +125,7 @@ ui <- fluidPage(
     ),
     mainPanel(
       plotOutput("wine_plot"),
-      plotlyOutput("wine_point"),
+      plotlyOutput(outputId = "wine_point"),
       tableOutput("wine_table")
       
     )
@@ -144,7 +144,7 @@ server <- function(input, output, session) {
     updateSelectInput(inputId = "grape_sel",
                       choices = grape_sel)
   })
-   wine_plot <- reactive({
+   wine_df <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
   filter(variety == input$grape_sel) |> 
   filter(price >= input$price_range) |> filter(
@@ -155,14 +155,14 @@ server <- function(input, output, session) {
     wine_plot()
   })
   output$wine_plot <- renderPlot({
-    ggplot(wine_plot(), aes(x = price, y = points))+
+    ggplot(wine_df(), aes(x = price, y = points))+
   geom_hex()+
   scale_color_viridis_c()+
   labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
                           input$grape_sel))
   })
   output$wine_point <- renderPlotly({
-    ggplot(data = wine_plot(), aes(x = price, y = points, label = title))+
+    ggplot(data = wine_df(), aes(x = price, y = points, label = title))+
       geom_point()+
       theme_minimal()+
       labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
@@ -182,5 +182,70 @@ oregon_plot <- ggplot(data = oregon_pn, aes(x = price, y = points, label = title
 
 ggplotly(oregon_plot, tooltip = "label")
 
+```
+
+```{r}
+library(shiny)
+
+ui <- navbarPage("Wine of The World",
+                 tabPanel("Hex Plot",
+                          sidebarLayout(
+                            sidebarPanel(
+                            selectInput("country_sel", label = "Choose a Country", 
+                  choices = country_sel),
+      radioButtons("white_or_red", label = "Red or White",
+                  choices = c("Red", "White")),
+      selectInput("grape_sel", label = "Choose a Grape",
+                 choices = grape_sel),
+      sliderInput("price_range", label = "Choose a Minimum Price",
+                  min = 4, max = 2500, value = c(4,2500), step = 1)  
+                            ),
+      mainPanel(
+        plotOutput("wine_plot")
+      )
+                          ))
+  
+)
+
+server <- function(input, output, session) {
+   observeEvent(input$white_or_red, {
+   grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> distinct(variety) |> pull(variety)
+   
+   updateSelectInput(inputId = "grape_sel",
+                     choices = grape_sel)
+ })
+  observeEvent(input$country_sel,{
+    grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> filter(country == input$country_sel) |> distinct(variety) |> pull(variety)
+    updateSelectInput(inputId = "grape_sel",
+                      choices = grape_sel)
+  })
+   wine_df <- reactive({
+    wine_one <- wine_clean |> filter(country == input$country_sel) |> 
+  filter(variety == input$grape_sel) |> 
+  filter(price >= input$price_range) |> filter(
+  price >= input$price_range[1] & price <= input$price_range[2])
+  })
+   
+  output$wine_table <- renderTable({
+    wine_plot()
+  })
+  output$wine_plot <- renderPlot({
+    ggplot(wine_df(), aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()+
+  labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
+                          input$grape_sel))
+  })
+  output$wine_point <- renderPlotly({
+    ggplot(data = wine_df(), aes(x = price, y = points, label = title))+
+      geom_point()+
+      theme_minimal()+
+      labs(title = glue::glue("Graph of Price vs Score for ", input$country_sel,
+                          input$grape_sel))
+    ggplotly(wine_point, tooltip = "label")
+  })
+}
+
+shinyApp(ui, server)
 ```
 
