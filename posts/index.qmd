@@ -34,7 +34,7 @@ wine_clean <- wine_ratings |> filter(variety == "Cabernet Sauvignon"
                           | variety == "Moscato"
                           | variety == "Rosé"
                           | variety == "Prosecco" ~ "White",
-         variety == "Cabernet Savuginon" | variety == "Pinot Noir"
+         variety == "Cabernet Sauvignon" | variety == "Pinot Noir"
          | variety == "Merlot" | variety == "Red Blend" | 
            variety == "Malbec" | variety == "Tempranillo" |
            variety == "Syrah" | variety == "Shiraz" |
@@ -46,7 +46,7 @@ wine_ratings |> filter(variety == "Zinfandel")
 wine_clean |> filter(!is.na(price)) |> summarise(min(price))
 wine_clean |> filter(!is.na(price)) |> summarise(max(price))
 ## Of the 707 varieties in the data set I have collected 17 of the most popular grape varieties, leaving me with almost 60,000 observations.
-
+sh <- wine_clean |> filter(variety == "Shiraz") |> filter(country == "Italy")
 oregon_pn <- wine_clean |> filter(country == "US") |> 
   filter(variety == "Pinot Noir") |> 
   filter(price >= 20 & price <= 50) |> 
@@ -100,17 +100,86 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 ```
-
+Plots for Analysis
 ```{r}
-ggplot(wine_clean, aes(x = price, y = points))+
+wine_i <- wine_clean |> filter(country == "Italy") |> filter(!is.na(variety))
+ggplot(wine_i, aes(x = price, y = points))+
   geom_hex()+
   scale_color_viridis_c()
 
-wine_i <- wine_clean |> filter(country == "Italy") |> filter(!is.na(variety))
   
 ggplot(wine_clean |> filter(country == "Italy"), aes(x = variety))+
   geom_bar()+
   facet_wrap(~r_w)
+
+```
+
+```{r}
+wine_f <- wine_clean |> filter(country == "France") |> filter(!is.na(variety))
+ggplot(wine_f, aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()
+
+  
+ggplot(wine_clean |> filter(country == "France"), aes(x = variety))+
+  geom_bar()+
+  facet_wrap(~r_w)
+
+france_cs <- wine_clean |> filter(country == "France") |> 
+  filter(variety == "Cabernet Sauvignon")
+
+france_plot <- ggplot(data = france_cs, aes(x = price, y = points, label = title))+
+  geom_point()+
+  geom_jitter(width = .05)
+  theme_minimal()
+
+ggplotly(france_plot, tooltip = "label")
+```
+
+```{r}
+wine_u <- wine_clean |> filter(country == "US") |> filter(!is.na(variety))
+ggplot(wine_u, aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()
+
+  
+ggplot(wine_clean |> filter(country == "US"), aes(x = variety))+
+  geom_bar()+
+  facet_wrap(~r_w)
+
+cali_cs <- wine_clean |> filter(country == "US") |> 
+  filter(variety == "Cabernet Sauvignon") |> 
+  filter(province == "California")
+
+ggplot(cali_cs, aes(x = price, y = points))+
+  geom_hex()+
+  theme_minimal()
+```
+
+```{r}
+wine_n <- wine_clean |> filter(country == "New Zealand") |> filter(!is.na(variety))
+ggplot(wine_n, aes(x = price, y = points))+
+  geom_hex()+
+  scale_color_viridis_c()
+
+  
+ggplot(wine_clean |> filter(country == "New Zeaaland"), aes(x = variety))+
+  geom_bar()+
+  facet_wrap(~r_w)
+
+newz_sb <- wine_clean |> filter(country == "New Zealand") |> 
+  filter(variety == "Sauvignon Blanc")
+
+nz_plot <- ggplot(data = newz_sb, aes(x = price, y = points, label = title))+
+  geom_point()+
+  geom_jitter(width = .05)
+  theme_minimal()
+
+ggplotly(nz_plot, tooltip = "label")
+
+ggplot(newz_sb, aes(x = price, y = points))+
+  geom_hex()+
+  theme_minimal()
 ```
 
 Testing section to not break code
@@ -153,8 +222,7 @@ server <- function(input, output, session) {
    wine_df <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
   filter(variety == input$grape_sel) |> 
-  filter(price >= input$price_range) |> filter(
-  price >= input$price_range[1] & price <= input$price_range[2])
+  filter(price >= input$price_range[1] & price <= input$price_range[2])
   })
    wine_bar <- reactive({
      wine_clean |> filter(country == input$country_sel)
@@ -242,8 +310,7 @@ server <- function(input, output, session) {
    wine_df <- reactive({
     wine_one <- wine_clean |> filter(country == input$country_sel) |> 
   filter(variety == input$grape_sel) |> 
-  filter(price >= input$price_range) |> filter(
-  price >= input$price_range[1] & price <= input$price_range[2])
+  filter(price >= input$price_range[1] & price <= input$price_range[2])
   })
    wine_bar <- reactive({
      wine_clean |> filter(country == input$country_sel) 
