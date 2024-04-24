@@ -258,12 +258,13 @@ ui <- navbarPage("Wine of The World",
 server <- function(input, output, session) {
   observeEvent(input$white_or_red, {
    grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> distinct(variety) |> pull(variety)
-   
+   fct_drop(grape_sel)
    updateSelectInput(inputId = "grape_sel",
                      choices = grape_sel)
  })
   observeEvent(input$country_sel,{
     grape_sel <- wine_clean |> filter(r_w == input$white_or_red) |> filter(country == input$country_sel) |> distinct(variety) |> pull(variety)
+    fct_drop(grape_sel)
     updateSelectInput(inputId = "grape_sel",
                       choices = grape_sel)
   })
@@ -278,8 +279,7 @@ server <- function(input, output, session) {
    output$wine_bar <- renderPlot({
     ggplot(wine_bar(), aes(x = variety))+
   geom_bar()+
-  facet_wrap(~r_w)+
-       coord_flip()
+  facet_wrap(~r_w)
    })
   output$wine_table <- renderTable({
     wine_df()
@@ -319,7 +319,7 @@ Introduction: For this project I wanted to explore wine production around the wo
 
 
 ```{r}
-ui <- navbarPage("Wine of the World"
+ui <- navbarPage("Wine of the World",
   sidebarLayout(
     sidebarPanel(
       selectInput("country_sel", label = "Choose a Country", 
@@ -332,17 +332,15 @@ ui <- navbarPage("Wine of the World"
                                  min = 4, max = 2500, 
                   value = c(4,2500), step = 1)
     ),
-    mainPanel()
-  ),
-  tabPanel("Hex Plot",
-           plotOutput("wine_plot")),
-  tabPanel("Wine Point",
-         plotlyOutput("wine_point")),
-  tabPanel("Wine Table",
-         tableOutput("wine_table")),
-  tabPanel("Bar Graph",
-         plotOutput("wine_bar"))
-)
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Hex Plot", plotOutput("wine_plot")),
+        tabPanel("Wine Point", plotlyOutput("wine_point")),
+  tabPanel("Wine Table", tableOutput("wine_table")),
+  tabPanel("Bar Graph", plotOutput("wine_bar"))
+      )
+    )
+  ))
 
 server <- function(input, output, session) {
   observeEvent(input$white_or_red, {
@@ -362,7 +360,8 @@ server <- function(input, output, session) {
   filter(price >= input$price_range[1] & price <= input$price_range[2])
   })
    wine_bar <- reactive({
-     wine_clean |> filter(country == input$country_sel) 
+     wine_clean |> filter(country == input$country_sel) |> 
+     filter(r_w == input$white_or_red)
    })
    output$wine_bar <- renderPlot({
     ggplot(wine_bar(), aes(x = variety))+
@@ -392,4 +391,3 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 ```
-## tabsetpanel
