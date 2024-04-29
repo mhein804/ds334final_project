@@ -128,28 +128,23 @@ ggplot(cali_cs, aes(x = price, y = points))+
 ## New Zealand Analysis
 ```{r}
 wine_n <- wine_clean |> filter(country == "New Zealand") |> filter(!is.na(variety))
-ggplot(wine_n, aes(x = price, y = points))+
-  geom_hex()+
-  scale_color_viridis_c()
+
 
   
-ggplot(wine_n, aes(x = variety))+
-  geom_bar()+
-  facet_wrap(~r_w)
+ggplot(wine_clean |> filter(country == "New Zealand") |> filter(r_w == "Red"), 
+       aes(x = variety))+
+  geom_bar()
+
+ggplot(wine_clean |> filter(country == "New Zealand") |> filter(r_w == "White"), 
+       aes(x = variety))+
+  geom_bar()
 
 newz_sb <- wine_clean |> filter(country == "New Zealand") |> 
   filter(variety == "Sauvignon Blanc")
-
-nz_plot <- ggplot(data = newz_sb, aes(x = price, y = points, label = title))+
-  geom_point()+
-  geom_jitter(width = .05)
-  theme_minimal()
-
-ggplotly(nz_plot, tooltip = "label")
-
 ggplot(newz_sb, aes(x = price, y = points))+
   geom_hex()+
-  theme_minimal()
+  scale_color_viridis_c()
+
 ```
 
 Testing section to not break code
@@ -225,15 +220,7 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-```{r}
-library(plotly)
-oregon_plot <- ggplot(data = oregon_pn, aes(x = price, y = points, label = title))+
-  geom_point()+
-  theme_minimal()
 
-ggplotly(oregon_plot, tooltip = "label")
-
-```
 
 ```{r}
 library(shiny)
@@ -312,10 +299,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-```
-
-```{r}
-fct_drop()
 ```
 
 
