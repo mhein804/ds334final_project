@@ -19,14 +19,14 @@ wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascien
 
 wine_clean <- wine_ratings |> filter(variety == "Cabernet Sauvignon" 
                                      | variety == "Pinot Noir" | variety == "Merlot" 
-                                     | variety == "Chardonay" | variety == "Sauvignon Blanc"
+                                     | variety == "Chardonnay" | variety == "Sauvignon Blanc"
                                      | variety == "Pinot Gris" |  variety == "Reisling"                           | variety == "Red Blend"
                                      | variety == "White Blend" | variety == "Malbec"
                                      | variety == "Rosé" | variety == "Moscato"
                                      | variety == "Prosecco" | variety == "Tempranillo"
                                      | variety == "Syrah" | variety == "Shiraz"
                                      | variety == "Zinfandel") |> 
-  mutate(r_w = case_when(variety == "Chardonay" 
+  mutate(r_w = case_when(variety == "Chardonnay" 
                           | variety == "Sauvignon Blanc" 
                           | variety == "Pinot Gris" 
                           | variety == "Reisling" 
@@ -54,6 +54,7 @@ oregon_pn <- wine_clean |> filter(country == "US") |>
 
 ggplot(oregon_pn, aes(x = price, y = points))+
   geom_hex()
+wine_clean |> filter(country == "France") |> filter(variety == "Chardonay")
 ```
 
 Plots for Analysis
@@ -63,14 +64,19 @@ Plots for Analysis
 wine_i <- wine_clean |> filter(country == "Italy") |> filter(!is.na(variety))
 ggplot(wine_i, aes(x = price, y = points))+
   geom_hex()+
+  facet_wrap(~r_w)+
   scale_color_viridis_c()
 
   
-ggplot(wine_clean |> filter(country == "Italy"), aes(x = variety))+
-  geom_bar()+
-  facet_wrap(~r_w)
+ggplot(wine_clean |> filter(country == "Italy") |> filter(r_w == "Red"), 
+       aes(x = variety))+
+  geom_bar()
 
+ggplot(wine_clean |> filter(country == "Italy") |> filter(r_w == "White"), 
+       aes(x = variety))+
+  geom_bar()
 ```
+The country of Italy appears to produce mainly Red Blend and White Blend wines. Italy produces over 300 different Red Blend varieties, and just under 800 varieties of White Blend wines. In the production of white wines, Prosecco (a sparkling white wine) and Moscato (a sweet white wine) are then next most produced, both around 200 varieties. The majority of Italian wines score between 85 and 90 points, while having a price per bottle around $25.
 
 ## France Anaylsis
 ```{r}
@@ -80,10 +86,13 @@ ggplot(wine_f, aes(x = price, y = points))+
   scale_color_viridis_c()
 
   
-ggplot(wine_clean |> filter(country == "France"), aes(x = variety))+
-  geom_bar()+
-  facet_wrap(~r_w)
-
+ggplot(wine_clean |> filter(country == "France") |> filter(r_w == "Red"), 
+       aes(x = variety))+
+  geom_bar()
+  
+ggplot(wine_clean |> filter(country == "France") |> filter(r_w == "White"), 
+       aes(x = variety))+
+  geom_bar()
 france_cs <- wine_clean |> filter(country == "France") |> 
   filter(variety == "Cabernet Sauvignon")
 
@@ -94,6 +103,7 @@ france_plot <- ggplot(data = france_cs, aes(x = price, y = points, label = title
 
 ggplotly(france_plot, tooltip = "label")
 ```
+
 ## US Analysis
 ```{r}
 wine_u <- wine_clean |> filter(country == "US") |> filter(!is.na(variety))
@@ -123,7 +133,7 @@ ggplot(wine_n, aes(x = price, y = points))+
   scale_color_viridis_c()
 
   
-ggplot(wine_clean |> filter(country == "New Zeaaland"), aes(x = variety))+
+ggplot(wine_n, aes(x = variety))+
   geom_bar()+
   facet_wrap(~r_w)
 
@@ -313,7 +323,7 @@ fct_drop()
 
 Abstract: 
 
-Introduction: For this project I wanted to explore wine production around the world. My overall goal was to look at some of the biggest wine producing regions, and see what type of wines they are producing, and the quality of these wines. The data set I started with had over 150,000 observations, on numerous countries and grape varieties, so I choose to filter the data set down to 17 varieties with a little under 60,000 observations. From this cleaned data set I focused on the variables "country", "variety", "points", "price", and sometimes "region"
+Introduction: For this project I wanted to explore wine production around the world. My overall goal was to look at some of the biggest wine producing regions, and see what type of wines they are producing, and the quality of these wines. The data set I started with had over 150,000 observations, on numerous countries and grape varieties, so I choose to filter the data set down to 17 varieties with a little under 60,000 observations. From this cleaned data set I focused on the variables "country", "variety", "points", "price", and sometimes "region".
 
 
 
