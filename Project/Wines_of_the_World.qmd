@@ -36,8 +36,6 @@ wine_clean <- wine_ratings |> filter(variety == "Cabernet Sauvignon"
            variety == "Zinfandel" ~ "Red"))
 grape_sel <- wine_clean |> distinct(variety) |> pull(variety)
 country_sel <- wine_clean |> distinct(country) |> pull(country)
-wine_ratings |> distinct(variety) |> pull(variety)
-wine_ratings |> filter(variety == "Zinfandel")
 wine_clean |> filter(!is.na(price)) |> summarise(min(price))
 wine_clean |> filter(!is.na(price)) |> summarise(max(price))
 ## Of the 707 varieties in the data set I have collected 17 of the most popular grape varieties, leaving me with almost 60,000 observations.
@@ -68,8 +66,6 @@ world_plot <- ggplot(data = world_full, aes(x = long, y = lat, group = group,
   coord_map(projection = "mercator", xlim = c(-180,180))+
   scale_fill_viridis_c(direction = -1, option = "D")+
   labs(title = "Map of the World Colored by Total Number of Unique Wines")
-
-library(plotly)
 
 ggplotly(world_plot, tooltip = "label")
 ```
@@ -299,6 +295,6 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-
+## Link to Blog Post: https://mhein804.github.io/ds334blog/
 
 
