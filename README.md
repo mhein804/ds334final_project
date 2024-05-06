@@ -1,6 +1,6 @@
 # Wine of The World DS 334 Final 
 
-Here is my final project for Data Visualization 334 at SLU. In this project I found a data set containing wine reviews from around the world. I wanted to see how wine production looked in different countries, which varieties were produced where, and how the price impacted the points rating.
+Here is my final project for Data Visualization 334 at SLU. In this project I found a data set containing wine reviews from around the world. I wanted to see how wine production looked in different countries, which varieties were produced where, and how the price and points were related.
 
 Important Variables:
 
